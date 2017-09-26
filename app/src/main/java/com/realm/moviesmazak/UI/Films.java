@@ -119,7 +119,7 @@ public class Films extends Activity {
         try{
             File sdcard = Environment.getExternalStorageDirectory();
             File file = new File(sdcard, "movie_mazak.txt");
-            if(!file.exists()){
+            if(!file.exists()||sharedpreferences.getInt("status",0)==2){
                 new DownloadTask().execute(url);
                 Log.e("file not existed","<><>");
             }else{
@@ -232,17 +232,17 @@ public class Films extends Activity {
             try {
                 JSONObject obj = new JSONObject(text.toString());
                 SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putInt("status",obj.getInt("status"));
                 if (obj.getInt("status") == 1) {
                     Log.e("url is ", "<><>" + obj.getString("url"));
                     BASE_URL = obj.getString("url");
-
                     editor.putString("URL", BASE_URL);
-                    editor.commit();
                     initRetrofit(BASE_URL,true);
                     getResponse();
                 } else {
                     Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
                 }
+                editor.commit();
             } catch (Exception e) {
                 e.printStackTrace();
             }
