@@ -130,9 +130,6 @@ public class Films extends Activity {
         }catch (Exception e){
             e.printStackTrace();
         }
-
-
-
     }
 
     private class DownloadTask extends AsyncTask<String, Integer, String> {
