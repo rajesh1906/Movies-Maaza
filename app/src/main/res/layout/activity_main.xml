@@ -23,7 +23,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="  Movies"
+            android:text="  Movies Maaza"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:gravity="center_vertical"
@@ -52,6 +52,6 @@
         android:layout_alignParentBottom="true"
         ads:adSize="SMART_BANNER"
         android:visibility="gone"
-        ads:adUnitId="ca-app-pub-1671845713125648/8624064213" />
+        ads:adUnitId="ca-app-pub-9862631671335648/5510783260" />
 
 </RelativeLayout>

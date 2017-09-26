@@ -101,6 +101,7 @@ public class Films extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
          sharedpreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         mFirebaseAnalytics.setAnalyticsCollectionEnabled(true);
@@ -130,6 +131,8 @@ public class Films extends Activity {
         }catch (Exception e){
             e.printStackTrace();
         }
+//        my_adds();
+//        initializeInterstitialAdds();
     }
 
     private class DownloadTask extends AsyncTask<String, Integer, String> {
@@ -250,14 +253,14 @@ public class Films extends Activity {
 
     protected void initializeInterstitialAdds() {
         mInterstitialAd = new InterstitialAd(con);
-        mInterstitialAd.setAdUnitId("ca-app-pub-1671845713125648/1100797419");
+        mInterstitialAd.setAdUnitId("ca-app-pub-9862631671335648/3510294123");
         inter_adRequest = new AdRequest.Builder()
                 .build();
         mInterstitialAd.loadAd(inter_adRequest);
     }
 
     public void my_adds() {
-        MobileAds.initialize(getApplicationContext(), "ca-app-pub-1671845713125648~4193864617");
+        MobileAds.initialize(getApplicationContext(), "ca-app-pub-9862631671335648~7234928472");
         mAdView = (AdView) findViewById(R.id.adView);
         banner_adRequest = new AdRequest.Builder()
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
@@ -284,8 +287,6 @@ public class Films extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        my_adds();
-        initializeInterstitialAdds();
         if (mAdView != null) {
             mAdView.resume();
         }
@@ -396,7 +397,7 @@ public class Films extends Activity {
 
             Log.e("value is ", "<><>" + generateValue());
             apicalled = true;
-            serviceData = service.getUrlData("/telugu-movies/page/" + pageno + "/");
+            serviceData = service.getUrlData("/telugu-movies/page/" +(pageno==1?generateValue():pageno)+ "/");
             serviceData.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
