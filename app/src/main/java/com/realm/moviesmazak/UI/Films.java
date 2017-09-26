@@ -83,25 +83,22 @@ public class Films extends Activity {
     RestAPI service;
     boolean apicalled = false;
     Call<ResponseBody> serviceData;
-
     private AdView mAdView;
     private InterstitialAd mInterstitialAd;
     private AdRequest inter_adRequest;
     private AdRequest banner_adRequest;
     private FirebaseAnalytics mFirebaseAnalytics;
     private Context con;
-    //    private static String BASE_URL = "http://www.andhrawatch.com/";
-    private static String BASE_URL = "";
+//    private static String BASE_URL = "";
+    private static String BASE_URL = "http://www.movierulz.ms";
     String url = "https://dl.dropboxusercontent.com/s/f1joqpquzedmmpy/moviesurl.txt";
+
     SharedPreferences sharedpreferences;
     OkHttpClient defaultHttpClient;
-    //    String url="https://drive.google.com/open?id=10y2JM3it3-l3a3MEjryp70iFfu4OcWGgWZ3hFUO_wv8/";
-//    https://www.dropbox.com/s/f1joqpquzedmmpy/moviesurl.txt?dl=0
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
          sharedpreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         mFirebaseAnalytics.setAnalyticsCollectionEnabled(true);
@@ -113,11 +110,11 @@ public class Films extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager;
-        mLayoutManager = new GridLayoutManager(this, 2);
+        mLayoutManager = new GridLayoutManager(this, 3);
         mRecyclerView.setLayoutManager(mLayoutManager);
         progressDialog = new ProgressDialog(Films.this);
         progressDialog.setMessage("Loading Movies...");
-        try{
+       /* try{
             File sdcard = Environment.getExternalStorageDirectory();
             File file = new File(sdcard, "movie_mazak.txt");
             if(!file.exists()||sharedpreferences.getInt("status",0)==2){
@@ -125,14 +122,66 @@ public class Films extends Activity {
                 Log.e("file not existed","<><>");
             }else{
                 initRetrofit(sharedpreferences.getString("URL", ""),false);
-                getResponse();
+                getResponse(generateValue());
                 Log.e("file existed","<><>");
             }
         }catch (Exception e){
             e.printStackTrace();
-        }
+        }*/
+
+        initRetrofit(BASE_URL,true);
+        getNewResponse();
 //        my_adds();
 //        initializeInterstitialAdds();
+    }
+
+    void getNewResponse(){
+        progressDialog.show();
+        if (!apicalled) {
+            Log.e("value is ", "<><>" + generateValue());
+            apicalled = true;
+            serviceData = service.getUrlData("");
+            serviceData.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+
+                        Document document = Jsoup.parse(response.body().source().readUtf8());
+                        div = new Elements();
+//                        Log.e("response is ","<<><"+document);
+//                        div = document.select("div.herald-main-content").select("article").select("div.herald-post-thumbnail").select("a");
+                        div = document.select("div.featured").select("div.content-home_style");
+                        Log.e("div is ","<><>"+div);
+                        count = 0;
+                        for (final Element e : div) {
+                            Log.e("Image", "" + e.attr("href").replace(BASE_URL, "").replace("/", ""));
+//                            if(e.attr("href").contains("Movie")) {
+                           /* urlsArray.add(e.attr("href"));
+                            imagesArray.add(e.select("img").attr("src"));
+//                            }
+                            count++;
+                            if (div.size() == count) {
+                                if (pageno == 1) {
+                                    progressDialog.setMessage("Buffering ...");
+                                    mAdapter = new MyAdapter(imagesArray, urlsArray);
+                                    mRecyclerView.setAdapter(mAdapter);
+                                } else {
+                                    mAdapter.notifyDataSetChanged();
+                                }
+                            }*/
+                        }
+                        progressDialog.dismiss();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    t.printStackTrace();
+                }
+            });
+        }
     }
 
     private class DownloadTask extends AsyncTask<String, Integer, String> {
@@ -238,7 +287,7 @@ public class Films extends Activity {
                     BASE_URL = obj.getString("url");
                     editor.putString("URL", BASE_URL);
                     initRetrofit(BASE_URL,true);
-                    getResponse();
+                        getResponse(generateValue());
                 } else {
                     Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
                 }
@@ -354,12 +403,12 @@ public class Films extends Activity {
             Glide.with(Films.this)
                     .load(imagesArray.get(position))
                     .into(holder.icon);
-            holder.title.setTag(urlsArray.get(position));
-            holder.title.setText(urlsArray.get(position).replace(BASE_URL, "").replace("/", ""));
+            holder.title.setText(urlsArray.get(position));
+//            holder.title.setText(urlsArray.get(position).replace(BASE_URL, "").replace("/", ""));
             holder.icon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (mInterstitialAd.isLoaded()) {
+                   /* if (mInterstitialAd.isLoaded()) {
                         mInterstitialAd.show();
                     } else {
                         progressDialog.show();
@@ -373,7 +422,8 @@ public class Films extends Activity {
                             progressDialog.show();
                             playVideo(urlsArray.get(position));
                         }
-                    });
+                    });*/
+                    playVideo(urlsArray.get(holder.getAdapterPosition()));
                 }
             });
             if (pageno == 1) {
@@ -391,13 +441,14 @@ public class Films extends Activity {
 
     }
 
-    void getResponse() {
+    void getResponse(final int coming_from) {
         progressDialog.show();
+        Log.e("page number is ","<><>"+coming_from);
         if (!apicalled) {
 
             Log.e("value is ", "<><>" + generateValue());
             apicalled = true;
-            serviceData = service.getUrlData("/telugu-movies/page/" +(pageno==1?generateValue():pageno)+ "/");
+            serviceData = service.getUrlData("/short-movies/page/" +pageno+ "/");
             serviceData.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -409,8 +460,10 @@ public class Films extends Activity {
                         count = 0;
                         for (final Element e : div) {
                             Log.e("Image", "" + e.attr("href").replace(BASE_URL, "").replace("/", ""));
-                            urlsArray.add(e.attr("href"));
-                            imagesArray.add(e.select("img").attr("src"));
+//                            if(e.attr("href").contains("Movie")) {
+                                urlsArray.add(e.attr("href"));
+                                imagesArray.add(e.select("img").attr("src"));
+//                            }
                             count++;
                             if (div.size() == count) {
                                 if (pageno == 1) {
@@ -491,7 +544,7 @@ public class Films extends Activity {
                 apicalled = false;
                 pageno++;
                 progressBar.setVisibility(View.VISIBLE);
-                getResponse();
+                getResponse(pageno);
             }
         }
     }
@@ -534,7 +587,7 @@ public class Films extends Activity {
     private int generateValue() {
         Random r = new Random();
         int Low = 1;
-        int High = 81;
+        int High = 5;
         return r.nextInt(High - Low) + Low;
     }
 }
