@@ -385,6 +385,7 @@ public class Films extends Activity {
                         div = document.select("iframe");
                         String url = div.attr("src");
                         Log.e("url is", "<><>" + url);
+
                         Intent intent = new Intent(Films.this, PlayingVideo.class);
                         intent.putExtra("url", url);
                         startActivity(intent);
@@ -394,8 +395,8 @@ public class Films extends Activity {
                                 progressDialog.dismiss();
                             }
                         }
-                        progressBar.setVisibility(View.GONE);
                     }
+                    progressBar.setVisibility(View.GONE);
 //                    progressDialog.dismiss();
                 } catch (Exception e) {
                     e.printStackTrace();
