@@ -89,9 +89,8 @@ public class Films extends Activity {
     private AdRequest banner_adRequest;
     private FirebaseAnalytics mFirebaseAnalytics;
     private Context con;
-//    private static String BASE_URL = "";
-    private static String BASE_URL = "http://www.movierulz.ms";
-    String url = "https://dl.dropboxusercontent.com/s/f1joqpquzedmmpy/moviesurl.txt";
+    private static String BASE_URL = "";
+    String url = "https://dl.dropboxusercontent.com/s/zw3tqoh9rsxu4z9/moviemaazaurl.txt/";
 
     SharedPreferences sharedpreferences;
     OkHttpClient defaultHttpClient;
@@ -113,24 +112,15 @@ public class Films extends Activity {
         mLayoutManager = new GridLayoutManager(this,2);
         mRecyclerView.setLayoutManager(mLayoutManager);
         progressDialog = new ProgressDialog(Films.this);
+        progressDialog.setCancelable(false);
         progressDialog.setMessage("Loading Movies...");
-       /* try{
-            File sdcard = Environment.getExternalStorageDirectory();
-            File file = new File(sdcard, "movie_mazak.txt");
-            if(!file.exists()||sharedpreferences.getInt("status",0)==2){
-                new DownloadTask().execute(url);
-                Log.e("file not existed","<><>");
-            }else{
-                initRetrofit(sharedpreferences.getString("URL", ""),false);
-                getResponse(generateValue());
-                Log.e("file existed","<><>");
-            }
+        try{
+            initRetrofit(url,false);
+            initURL(url);
+
         }catch (Exception e){
             e.printStackTrace();
-        }*/
-
-        initRetrofit(BASE_URL,true);
-        getNewResponse();
+        }
 //        my_adds();
 //        initializeInterstitialAdds();
     }
@@ -184,121 +174,6 @@ public class Films extends Activity {
         }
     }
 
-    private class DownloadTask extends AsyncTask<String, Integer, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressDialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... sUrl) {
-            InputStream input = null;
-            OutputStream output = null;
-            HttpURLConnection connection = null;
-            try {
-                URL url = new URL(sUrl[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    return "Server returned HTTP " + connection.getResponseCode()
-                            + " " + connection.getResponseMessage();
-                }
-                int fileLength = connection.getContentLength();
-                input = connection.getInputStream();
-                output = new FileOutputStream("/sdcard/movie_mazak.txt");
-
-                byte data[] = new byte[4096];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    // allow canceling with back button
-                    if (isCancelled()) {
-                        input.close();
-                        return null;
-                    }
-                    total += count;
-                    // publishing the progress....
-                    if (fileLength > 0) // only if total length is known
-                        publishProgress((int) (total * 100 / fileLength));
-                    output.write(data, 0, count);
-                }
-            } catch (Exception e) {
-                return e.toString();
-            } finally {
-                try {
-                    if (output != null)
-                        output.close();
-                    if (input != null)
-                        input.close();
-                } catch (IOException ignored) {
-                }
-
-                if (connection != null)
-                    connection.disconnect();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            new retrievedata().execute();
-
-
-        }
-    }
-
-
-    class retrievedata extends AsyncTask<String, String, String> {
-        StringBuilder text = new StringBuilder();
-
-        @Override
-        protected String doInBackground(String... arg0) {
-            // TODO Auto-generated method stub
-
-            try {
-                File sdcard = Environment.getExternalStorageDirectory();
-                File file = new File(sdcard, "movie_mazak.txt");
-                Log.e("file exists ", "<><" + file.exists());
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    text.append(line);
-                    text.append('\n');
-                }
-                br.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        protected void onPostExecute(String ab) {
-            progressDialog.dismiss();
-            Log.e(" text value is ", "<><>" + text.toString());
-            try {
-                JSONObject obj = new JSONObject(text.toString());
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putInt("status",obj.getInt("status"));
-                if (obj.getInt("status") == 1) {
-                    Log.e("url is ", "<><>" + obj.getString("url"));
-                    BASE_URL = obj.getString("url");
-                    editor.putString("URL", BASE_URL);
-                    initRetrofit(BASE_URL,true);
-                        getResponse(generateValue());
-                } else {
-                    Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
-                }
-                editor.commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-//            tv.setText(ab);
-        }
-
-    }
 
     protected void initializeInterstitialAdds() {
         mInterstitialAd = new InterstitialAd(con);
@@ -441,92 +316,6 @@ public class Films extends Activity {
 
     }
 
-    void getResponse(final int coming_from) {
-        progressDialog.show();
-        Log.e("page number is ","<><>"+coming_from);
-        if (!apicalled) {
-
-            Log.e("value is ", "<><>" + generateValue());
-            apicalled = true;
-            serviceData = service.getUrlData("/short-movies/page/" +pageno+ "/");
-            serviceData.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    try {
-
-                        Document document = Jsoup.parse(response.body().source().readUtf8());
-                        div = new Elements();
-                        div = document.select("div.herald-main-content").select("article").select("div.herald-post-thumbnail").select("a");
-                        count = 0;
-                        for (final Element e : div) {
-                            Log.e("Image", "" + e.attr("href").replace(BASE_URL, "").replace("/", ""));
-//                            if(e.attr("href").contains("Movie")) {
-                                urlsArray.add(e.attr("href"));
-                                imagesArray.add(e.select("img").attr("src"));
-//                            }
-                            count++;
-                            if (div.size() == count) {
-                                if (pageno == 1) {
-                                    progressDialog.setMessage("Buffering ...");
-                                    mAdapter = new MyAdapter(imagesArray, urlsArray);
-                                    mRecyclerView.setAdapter(mAdapter);
-                                } else {
-                                    mAdapter.notifyDataSetChanged();
-                                }
-                            }
-                        }
-                        progressDialog.dismiss();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    t.printStackTrace();
-                }
-            });
-        }
-    }
-
-    void playVideo(String url) {
-        Call<ResponseBody> fetchdata = service.getUrlData(url.replace(BASE_URL, ""));
-        fetchdata.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    if (response.isSuccessful()) {
-                        String html_resp = response.body().source().readUtf8();
-                        Document document = Jsoup.parse(html_resp);
-                        div = new Elements();
-                        div = document.select("iframe");
-                        String url = div.attr("src");
-                        Log.e("frames" + pageno, "" + div);
-                        Intent intent = new Intent(Films.this, PlayingVideo.class);
-                        intent.putExtra("url", url);
-                        startActivity(intent);
-                    } else {
-                        if (pageno == 1) {
-                            if (null != progressDialog && progressDialog.isShowing()) {
-                                progressDialog.dismiss();
-                            }
-                        }
-                        progressBar.setVisibility(View.GONE);
-                    }
-                    progressDialog.dismiss();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-            }
-        });
-
-    }
 
     void playvideoNew(String url){
         Call<ResponseBody> fetchdata = service.getUrlData(url.replace(BASE_URL, ""));
@@ -684,5 +473,60 @@ public class Films extends Activity {
         int Low = 1;
         int High = 5;
         return r.nextInt(High - Low) + Low;
+    }
+
+    void initURL(String url) {
+        progressDialog.show();
+        Retrofit retrofit;
+        RestAPI service;
+        Call<ResponseBody> serviceData;
+        retrofit = new Retrofit.Builder()
+                .baseUrl(url).build();
+        service = retrofit.create(RestAPI.class);
+        serviceData = service.getUrlData("test.html?dl=1");
+        serviceData.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+
+                    String value = response.body().source().readUtf8();
+                    String a_letter = Character.toString(value.charAt(0));
+                    Log.e("json", " " + value);
+                    Log.e("chearacter is ","<><>"+a_letter);
+                    try {
+//                        char result = response.body().source().readUtf8().charAt(0);
+                        if(a_letter.equals("1")){
+                            BASE_URL = value.replace("1","");
+                            Log.e("base url is ","<>>"+BASE_URL);
+                            initRetrofit(BASE_URL,true);
+                            getNewResponse();
+                        }else{
+                            Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
+                        }
+                       /* editor.putInt("status",obj.getInt("status"));
+                        if (obj.getInt("status") == 1) {
+                            Log.e("url is ", "<><>" + obj.getString("url"));
+                            BASE_URL = obj.getString("url");
+                            editor.putString("URL", BASE_URL);
+//                            initRetrofit(BASE_URL,true);
+                            getNewResponse();
+                        } else {
+                            Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
+                        }
+                        editor.commit();*/
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
     }
 }
