@@ -110,7 +110,7 @@ public class Films extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager;
-        mLayoutManager = new GridLayoutManager(this, 3);
+        mLayoutManager = new GridLayoutManager(this,2);
         mRecyclerView.setLayoutManager(mLayoutManager);
         progressDialog = new ProgressDialog(Films.this);
         progressDialog.setMessage("Loading Movies...");
@@ -140,7 +140,7 @@ public class Films extends Activity {
         if (!apicalled) {
             Log.e("value is ", "<><>" + generateValue());
             apicalled = true;
-            serviceData = service.getUrlData("");
+            serviceData = service.getUrlData("/category/telugu-movie/page/"+pageno+"/");
             serviceData.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -150,13 +150,13 @@ public class Films extends Activity {
                         div = new Elements();
 //                        Log.e("response is ","<<><"+document);
 //                        div = document.select("div.herald-main-content").select("article").select("div.herald-post-thumbnail").select("a");
-                        div = document.select("div.featured").select("div.content-home_style");
+                        div = document.select("div.featured").select("li").select("div").select("div.cont_display").select("a");
                         Log.e("div is ","<><>"+div);
                         count = 0;
                         for (final Element e : div) {
                             Log.e("Image", "" + e.attr("href").replace(BASE_URL, "").replace("/", ""));
 //                            if(e.attr("href").contains("Movie")) {
-                           /* urlsArray.add(e.attr("href"));
+                            urlsArray.add(e.attr("href"));
                             imagesArray.add(e.select("img").attr("src"));
 //                            }
                             count++;
@@ -168,7 +168,7 @@ public class Films extends Activity {
                                 } else {
                                     mAdapter.notifyDataSetChanged();
                                 }
-                            }*/
+                            }
                         }
                         progressDialog.dismiss();
                     } catch (Exception e) {
@@ -423,7 +423,7 @@ public class Films extends Activity {
                             playVideo(urlsArray.get(position));
                         }
                     });*/
-                    playVideo(urlsArray.get(holder.getAdapterPosition()));
+                    playvideoNew(urlsArray.get(holder.getAdapterPosition()));
                 }
             });
             if (pageno == 1) {
@@ -528,6 +528,100 @@ public class Films extends Activity {
 
     }
 
+    void playvideoNew(String url){
+        Call<ResponseBody> fetchdata = service.getUrlData(url.replace(BASE_URL, ""));
+        fetchdata.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    if (response.isSuccessful()) {
+                        String html_resp = response.body().source().readUtf8();
+                        Document document = Jsoup.parse(html_resp);
+                        div = new Elements();
+                        div = document.select("div.entry-content").select("p").select("a");
+                        Log.e("div is","<><>"+div);
+                        for (final Element e : div) {
+
+                            if(e.attr("href").contains("http://embedscr.to")){
+                                Log.e("url is ", "<><>" + e.attr("href"));
+                                getUrl(e.attr("href"));
+                                break;
+                            }
+//                        Log.e("get iframe url is ","<>"+getUrl())
+//
+                        }
+                        /*Intent intent = new Intent(Films.this, PlayingVideo.class);
+                        intent.putExtra("url", e.attr("href"));
+                        startActivity(intent);*/
+                        /*div = document.select("iframe");
+                        String url = div.attr("src");
+                        Log.e("frames" + pageno, "" + div);
+                        */
+                    } else {
+                        if (pageno == 1) {
+                            if (null != progressDialog && progressDialog.isShowing()) {
+                                progressDialog.dismiss();
+                            }
+                        }
+                        progressBar.setVisibility(View.GONE);
+                    }
+                    progressDialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+
+    private void getUrl(String url){
+        progressBar.setVisibility(View.VISIBLE);
+        Call<ResponseBody> fetchdata = service.getUrlData(url);
+        fetchdata.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    if (response.isSuccessful()) {
+                        String html_resp = response.body().source().readUtf8();
+                        Document document = Jsoup.parse(html_resp);
+                        div = new Elements();
+//                        div = document.select("div.entry-content").select("iframe");
+
+                        div = document.select("iframe");
+                        String url = div.attr("src");
+                        Log.e("url is","<><>"+url);
+                        Intent intent = new Intent(Films.this, PlayingVideo.class);
+                        intent.putExtra("url",url);
+                        startActivity(intent);
+                    } else {
+                        if (pageno == 1) {
+                            if (null != progressDialog && progressDialog.isShowing()) {
+                                progressDialog.dismiss();
+                            }
+                        }
+                        progressBar.setVisibility(View.GONE);
+                    }
+//                    progressDialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+
     public class ScrolledDataLoader extends RecyclerView.OnScrollListener {
 
         @Override
@@ -544,7 +638,8 @@ public class Films extends Activity {
                 apicalled = false;
                 pageno++;
                 progressBar.setVisibility(View.VISIBLE);
-                getResponse(pageno);
+//                getResponse(pageno);
+                getNewResponse();
             }
         }
     }
