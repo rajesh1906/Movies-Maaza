@@ -95,11 +95,12 @@ public class Films extends Activity {
 
     SharedPreferences sharedpreferences;
     OkHttpClient defaultHttpClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-         sharedpreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        sharedpreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         mFirebaseAnalytics.setAnalyticsCollectionEnabled(true);
         con = this.getBaseContext();
@@ -110,28 +111,27 @@ public class Films extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager;
-        mLayoutManager = new GridLayoutManager(this,2);
+        mLayoutManager = new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(mLayoutManager);
         progressDialog = new ProgressDialog(Films.this);
         progressDialog.setCancelable(false);
         progressDialog.setMessage("Loading Movies...");
-        try{
-            initRetrofit(url,false);
+        try {
+            initRetrofit(url, false);
             initURL(url);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-//        my_adds();
-//        initializeInterstitialAdds();
+
     }
 
-    void getNewResponse(){
+    void getNewResponse() {
         progressDialog.show();
         if (!apicalled) {
             Log.e("value is ", "<><>" + generateValue());
             apicalled = true;
-            serviceData = service.getUrlData("/category/telugu-movie/page/"+pageno+"/");
+            serviceData = service.getUrlData("/category/telugu-movie/page/" + pageno + "/");
             serviceData.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -142,7 +142,7 @@ public class Films extends Activity {
 //                        Log.e("response is ","<<><"+document);
 //                        div = document.select("div.herald-main-content").select("article").select("div.herald-post-thumbnail").select("a");
                         div = document.select("div.featured").select("li").select("div").select("div.cont_display").select("a");
-                        Log.e("div is ","<><>"+div);
+                        Log.e("div is ", "<><>" + div);
                         count = 0;
                         for (final Element e : div) {
                             Log.e("Image", "" + e.attr("href").replace(BASE_URL, "").replace("/", ""));
@@ -218,26 +218,26 @@ public class Films extends Activity {
 
     }
 
-    public void initRetrofit(String url,boolean initial) {
-        if(initial){
-              HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-         defaultHttpClient = new OkHttpClient.Builder().addInterceptor(interceptor)
-                .addInterceptor(
-                        new Interceptor() {
-                            @Override
-                            public okhttp3.Response intercept(Chain chain) throws IOException {
-                                Request request = chain.request().newBuilder()
-                                        .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36")
-                                        .build();
-                                return chain.proceed(request);
-                            }
-                        }).build();
+    public void initRetrofit(String url, boolean initial) {
+        if (initial) {
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            defaultHttpClient = new OkHttpClient.Builder().addInterceptor(interceptor)
+                    .addInterceptor(
+                            new Interceptor() {
+                                @Override
+                                public okhttp3.Response intercept(Chain chain) throws IOException {
+                                    Request request = chain.request().newBuilder()
+                                            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36")
+                                            .build();
+                                    return chain.proceed(request);
+                                }
+                            }).build();
             retrofit = new Retrofit.Builder()
                     .client(defaultHttpClient)
                     .baseUrl(url).build();
             service = retrofit.create(RestAPI.class);
-        }else{
+        } else {
             retrofit = new Retrofit.Builder()
                     .baseUrl(url).build();
             service = retrofit.create(RestAPI.class);
@@ -316,11 +316,10 @@ public class Films extends Activity {
         }
 
 
-
     }
 
 
-    void playvideoNew(String url){
+    void playvideoNew(String url) {
         Call<ResponseBody> fetchdata = service.getUrlData(url.replace(BASE_URL, ""));
         fetchdata.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -331,11 +330,11 @@ public class Films extends Activity {
                         Document document = Jsoup.parse(html_resp);
                         div = new Elements();
                         div = document.select("div.entry-content").select("p").select("a");
-                        Log.e("div is","<><>"+div);
+                        Log.e("div is", "<><>" + div);
                         for (final Element e : div) {
 //                            http://embedsr.to/?p=96784"
                             //http://embedrip.to/?p=2210"
-                            if(e.attr("href").contains("http://embedrip.to")){
+                            if (e.attr("href").contains("http://embedrip.to")) {
                                 Log.e("url is ", "<><>" + e.attr("href"));
                                 getUrl(e.attr("href"));
                                 break;
@@ -373,7 +372,7 @@ public class Films extends Activity {
     }
 
 
-    private void getUrl(String url){
+    private void getUrl(String url) {
         progressBar.setVisibility(View.VISIBLE);
         Call<ResponseBody> fetchdata = service.getUrlData(url);
         fetchdata.enqueue(new Callback<ResponseBody>() {
@@ -388,9 +387,9 @@ public class Films extends Activity {
 
                         div = document.select("iframe");
                         String url = div.attr("src");
-                        Log.e("url is","<><>"+url);
+                        Log.e("url is", "<><>" + url);
                         Intent intent = new Intent(Films.this, PlayingVideo.class);
-                        intent.putExtra("url",url);
+                        intent.putExtra("url", url);
                         startActivity(intent);
                     } else {
                         if (pageno == 1) {
@@ -494,34 +493,23 @@ public class Films extends Activity {
                 try {
 
                     String value = response.body().source().readUtf8();
-                    String a_letter = Character.toString(value.charAt(0));
-                    Log.e("json", " " + value);
-                    Log.e("chearacter is ","<><>"+a_letter);
-                    try {
-//                        char result = response.body().source().readUtf8().charAt(0);
-                        if(a_letter.equals("1")){
-                            BASE_URL = value.replace("1","");
-                            Log.e("base url is ","<>>"+BASE_URL);
-                            initRetrofit(BASE_URL,true);
-                            getNewResponse();
-                        }else{
-                            Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
-                        }
-                       /* editor.putInt("status",obj.getInt("status"));
-                        if (obj.getInt("status") == 1) {
-                            Log.e("url is ", "<><>" + obj.getString("url"));
-                            BASE_URL = obj.getString("url");
-                            editor.putString("URL", BASE_URL);
-//                            initRetrofit(BASE_URL,true);
-                            getNewResponse();
-                        } else {
-                            Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
-                        }
-                        editor.commit();*/
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    JSONObject jsonObject = new JSONObject(value);
+                    Log.e("status is", "<><>" + jsonObject.getInt("status"));
+                    Log.e("show adds is", "<><>" + jsonObject.getString("showadds"));
 
+                    if (jsonObject.getInt("status") == 1) {
+                        BASE_URL = jsonObject.getString("url");
+                        Log.e("base url is ", "<>>" + BASE_URL);
+                        initRetrofit(BASE_URL, true);
+                        getNewResponse();
+                        if (jsonObject.getString("showadds").equalsIgnoreCase("yes")) {
+                            //showing adds
+                            //        my_adds();
+//        initializeInterstitialAdds();
+                        }
+                    } else {
+                        Toast.makeText(Films.this, "Server Under Maintaince", Toast.LENGTH_LONG).show();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
