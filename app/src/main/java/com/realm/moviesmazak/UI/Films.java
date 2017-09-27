@@ -336,16 +336,7 @@ public class Films extends Activity {
                                 getUrl(e.attr("href"));
                                 break;
                             }
-//                        Log.e("get iframe url is ","<>"+getUrl())
-//
                         }
-                        /*Intent intent = new Intent(Films.this, PlayingVideo.class);
-                        intent.putExtra("url", e.attr("href"));
-                        startActivity(intent);*/
-                        /*div = document.select("iframe");
-                        String url = div.attr("src");
-                        Log.e("frames" + pageno, "" + div);
-                        */
                     } else {
                         if (pageno == 1) {
                             if (null != progressDialog && progressDialog.isShowing()) {
@@ -367,8 +358,6 @@ public class Films extends Activity {
             }
         });
     }
-
-
     private void getUrl(String url) {
         progressBar.setVisibility(View.VISIBLE);
         Call<ResponseBody> fetchdata = service.getUrlData(url);
@@ -380,8 +369,6 @@ public class Films extends Activity {
                         String html_resp = response.body().source().readUtf8();
                         Document document = Jsoup.parse(html_resp);
                         div = new Elements();
-//                        div = document.select("div.entry-content").select("iframe");
-
                         div = document.select("iframe");
                         String url = div.attr("src");
                         Log.e("url is", "<><>" + url);
