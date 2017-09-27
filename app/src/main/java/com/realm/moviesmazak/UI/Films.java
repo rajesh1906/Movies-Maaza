@@ -125,7 +125,7 @@ public class Films extends Activity {
         }
 
     }
-
+    //getting response
     void getNewResponse() {
         progressDialog.show();
         if (!apicalled) {
@@ -139,14 +139,11 @@ public class Films extends Activity {
 
                         Document document = Jsoup.parse(response.body().source().readUtf8());
                         div = new Elements();
-//                        Log.e("response is ","<<><"+document);
-//                        div = document.select("div.herald-main-content").select("article").select("div.herald-post-thumbnail").select("a");
                         div = document.select("div.featured").select("li").select("div").select("div.cont_display").select("a");
                         Log.e("div is ", "<><>" + div);
                         count = 0;
                         for (final Element e : div) {
                             Log.e("Image", "" + e.attr("href").replace(BASE_URL, "").replace("/", ""));
-//                            if(e.attr("href").contains("Movie")) {
                             urlsArray.add(e.attr("href"));
                             imagesArray.add(e.select("img").attr("src"));
 //                            }
