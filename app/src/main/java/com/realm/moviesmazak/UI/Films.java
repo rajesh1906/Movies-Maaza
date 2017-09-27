@@ -35,6 +35,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.realm.moviesmazak.Manager.SessionManager;
 import com.realm.moviesmazak.Network.RestAPI;
 import com.realm.moviesmazak.R;
+import com.realm.moviesmazak.UI.Widget.GridRecyclerView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -68,7 +69,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class Films extends Activity {
-    private RecyclerView mRecyclerView;
+    private GridRecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private
     ArrayList<String> imagesArray;
@@ -105,7 +106,7 @@ public class Films extends Activity {
         imagesArray = new ArrayList<>();
         urlsArray = new ArrayList<>();
         sessionManager = new SessionManager(Films.this);
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        mRecyclerView = (GridRecyclerView) findViewById(R.id.my_recycler_view);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager;
@@ -314,6 +315,8 @@ public class Films extends Activity {
             return imagesArray.size();
         }
 
+
+
     }
 
 
@@ -330,8 +333,9 @@ public class Films extends Activity {
                         div = document.select("div.entry-content").select("p").select("a");
                         Log.e("div is","<><>"+div);
                         for (final Element e : div) {
-
-                            if(e.attr("href").contains("http://embedscr.to")){
+//                            http://embedsr.to/?p=96784"
+                            //http://embedrip.to/?p=2210"
+                            if(e.attr("href").contains("http://embedrip.to")){
                                 Log.e("url is ", "<><>" + e.attr("href"));
                                 getUrl(e.attr("href"));
                                 break;

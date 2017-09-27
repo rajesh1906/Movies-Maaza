@@ -31,7 +31,7 @@
             android:typeface="sans" />
     </android.support.v7.widget.Toolbar>
 
-    <android.support.v7.widget.RecyclerView
+    <com.realm.moviesmazak.UI.Widget.GridRecyclerView
         android:id="@+id/my_recycler_view"
         android:layout_width="match_parent"
         android:layout_above="@+id/adView"
